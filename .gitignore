@@ -1,0 +1,41 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+
+# Env variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# VSCode settings (optional if you use VSCode)
+.vscode/
+
+# TypeScript specific
+*.tsbuildinfo
+
+# Docker
+docker-compose.override.yml
+
+# Optional: PM2 process manager files
+pids/
+*.pid
+*.seed
+
+# Optional: coverage reports (if you use Jest)
+coverage/
+
+# Misc
+.idea/
+*.swp
