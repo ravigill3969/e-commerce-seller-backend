@@ -30,7 +30,6 @@ interface MongoCastError extends Error {
   value?: string;
 }
 
-// Development environment error handler (with detailed error info)
 const sendDevError = (err: AppError, res: Response): void => {
   const response: ErrorResponse = {
     status: err.status || "error",
@@ -46,16 +45,13 @@ const sendDevError = (err: AppError, res: Response): void => {
   res.status(err.statusCode || 500).json(response);
 };
 
-// Production environment error handler (sanitized error info)
 const sendProdError = (err: AppError, res: Response): void => {
-  // Operational errors that we trust: send to client
   if (err.isOperational) {
     const response: ErrorResponse = {
       status: err.status,
       message: err.message,
     };
 
-    // Add validation errors if present
     if (err.errors) {
       response.errors = err.errors;
     }
@@ -64,7 +60,6 @@ const sendProdError = (err: AppError, res: Response): void => {
     return;
   }
 
-  // Programming or unknown errors: don't leak error details to client
   console.error("ERROR 💥", err);
   res.status(500).json({
     status: "error",
@@ -72,7 +67,6 @@ const sendProdError = (err: AppError, res: Response): void => {
   });
 };
 
-// MongoDB specific error handlers
 const handleMongoDBDuplicateKeyError = (err: MongoError): AppError => {
   if (!err.keyValue) {
     return new AppError("Duplicate field value", 409);
@@ -97,7 +91,6 @@ const handleMongoDBCastError = (err: MongoCastError): AppError => {
   return new AppError(message, 400);
 };
 
-// Express error handling middleware
 export const errorHandler = (
   err: any,
   req: Request,
@@ -122,7 +115,6 @@ export const errorHandler = (
   if (error.name === "TokenExpiredError")
     error = new AppError("Your token has expired. Please log in again!", 401);
 
-  // Send different errors based on environment
   if (process.env.NODE_ENV === "development") {
     sendDevError(error, res);
   } else {
