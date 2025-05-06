@@ -1,11 +1,27 @@
-import express from "express"
-import dotenv from "dotenv"
+import express from "express";
+import dotenv from "dotenv";
+import authRouter from "./routes/auth";
+import cors from "cors";
+import mongoose from "mongoose";
 
-dotenv.config({})
+dotenv.config({});
 
-const app = express()
+mongoose.connect(process.env.MONGO_DB_URI!).then(() => {
+  console.log("--- coneected to mongoDB successfully!" + " " + "---");
+});
 
+const app = express();
 
-app.listen(process.env.PORT, ()=>{
-    console.log("--- server is running" + " " + process.env.PORT + " " + "---")
-})
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+app.use(express.json());
+
+app.use("/seller/auth", authRouter);
+
+app.listen(process.env.PORT, () => {
+  console.log("--- server is running" + " " + process.env.PORT + " " + "---");
+});

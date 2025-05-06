@@ -3,23 +3,11 @@ import validator from "validator";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
-interface ISeller extends Document {
-  firstName: string;
-  lastName: string;
+interface IUser extends Document {
+  name: string;
   email: string;
-  phone?: string;
   password: string;
-  businessName: string;
-  businessDescription?: string;
-  businessLogo?: string;
-  businessId: string;
-  businessAddress?: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country?: string;
-  };
+  picture: string;
   socialMedia?: {
     website?: string;
     facebook?: string;
@@ -44,66 +32,32 @@ interface ISeller extends Document {
   createPasswordResetToken(): string;
 }
 
-const sellerSchema: Schema<ISeller> = new mongoose.Schema({
-  firstName: {
+const UserSchema: Schema<IUser> = new mongoose.Schema({
+  name: {
     type: String,
     required: [true, "Please enter your first name"],
     trim: true,
     maxlength: [50, "First name cannot exceed 50 characters"],
   },
-  lastName: {
-    type: String,
-    required: [true, "Please enter your last name"],
-    trim: true,
-    maxlength: [50, "Last name cannot exceed 50 characters"],
-  },
+
   email: {
     type: String,
     required: [true, "Please enter your email"],
     unique: true,
     lowercase: true,
-    validate: [validator.isEmail, "Please enter a valid email"],
+    // validate: [validator.isEmail, "Please enter a valid email"],
   },
-  phone: {
-    type: String,
-    validate: {
-      validator: function (v: string) {
-        return /^\+?[1-9]\d{1,14}$/.test(v);
-      },
-      message: "Please enter a valid phone number",
-    },
-  },
+
   password: {
     type: String,
     required: [true, "Please enter a password"],
-    minlength: [8, "Password must be at least 8 characters"],
+    minlength: [3, "Password must be at least 8 characters"],
     select: false,
   },
-  businessName: {
+
+  picture: {
     type: String,
-    required: [true, "Please enter your business name"],
-    unique: true,
-    trim: true,
-    maxlength: [100, "Business name cannot exceed 100 characters"],
-  },
-  businessDescription: {
-    type: String,
-    maxlength: [500, "Description cannot exceed 500 characters"],
-  },
-  businessLogo: {
-    type: String,
-    default: "default-logo.jpg",
-  },
-  businessId: {
-    type: String,
-    required: true,
-  },
-  businessAddress: {
-    street: String,
-    city: String,
-    state: String,
-    zipCode: String,
-    country: String,
+    default: "",
   },
   socialMedia: {
     website: String,
@@ -142,23 +96,23 @@ const sellerSchema: Schema<ISeller> = new mongoose.Schema({
   lastLogin: Date,
 });
 
-sellerSchema.index({ email: 1 });
-sellerSchema.index({ businessName: 1 });
+UserSchema.index({ email: 1 });
+UserSchema.index({ businessName: 1 });
 
-sellerSchema.pre<ISeller>("save", async function (next) {
+UserSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-sellerSchema.methods.comparePassword = async function (
+UserSchema.methods.comparePassword = async function (
   candidatePassword: string,
   userPassword: string
 ): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-sellerSchema.methods.createPasswordResetToken = function (): string {
+UserSchema.methods.createPasswordResetToken = function (): string {
   const resetToken = crypto.randomBytes(32).toString("hex");
   this.passwordResetToken = crypto
     .createHash("sha256")
@@ -168,6 +122,6 @@ sellerSchema.methods.createPasswordResetToken = function (): string {
   return resetToken;
 };
 
-const Seller = mongoose.model<ISeller>("Seller", sellerSchema);
+const User = mongoose.model<IUser>("User", UserSchema);
 
-export default Seller;
+export default User;
