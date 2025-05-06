@@ -96,7 +96,6 @@ const UserSchema: Schema<IUser> = new mongoose.Schema({
   lastLogin: Date,
 });
 
-UserSchema.index({ email: 1 });
 UserSchema.index({ businessName: 1 });
 
 UserSchema.pre<IUser>("save", async function (next) {

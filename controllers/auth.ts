@@ -1,6 +1,7 @@
 import User from "../models/user";
 import Seller from "../models/user";
 import { Request, Response, NextFunction } from "express";
+import sendResponse from "../utils/sendResponse";
 
 export const register = async (
   req: Request,
@@ -15,13 +16,20 @@ export const register = async (
       picture,
     });
 
-    console.log(user)
+    console.log(user);
 
-    if(!user){
-        
+    if (!user) {
+      sendResponse("Failed!", 403, false, res);
+      return;
     }
+
+    res.status(200).json({
+      success: true,
+      message: "Registed successfully!!",
+    });
   } catch (error) {
     console.log(error);
+    sendResponse("Internal server error!", 500, false, res);
   }
 };
 

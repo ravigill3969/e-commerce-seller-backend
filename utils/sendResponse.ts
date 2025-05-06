@@ -10,4 +10,6 @@ export default function sendResponse(
     success,
     message,
   });
+
+  return;
 }
