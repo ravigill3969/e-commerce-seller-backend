@@ -1,12 +1,6 @@
 // src/middleware/errorHandler.ts
-import { Request, Response, NextFunction } from 'express';
-import { 
-  AppError, 
-  BadRequestError, 
-  ConflictError, 
-  InputValidationError, 
-  UnauthorizedError 
-} from '../errors';
+import { Request, Response, NextFunction } from "express";
+import { AppError } from "./AppError";
 
 // Error response interface
 interface ErrorResponse {
@@ -39,10 +33,10 @@ interface MongoCastError extends Error {
 // Development environment error handler (with detailed error info)
 const sendDevError = (err: AppError, res: Response): void => {
   const response: ErrorResponse = {
-    status: err.status || 'error',
+    status: err.status || "error",
     message: err.message,
     stack: err.stack,
-    error: err
+    error: err,
   };
 
   if (err.errors) {
@@ -58,47 +52,49 @@ const sendProdError = (err: AppError, res: Response): void => {
   if (err.isOperational) {
     const response: ErrorResponse = {
       status: err.status,
-      message: err.message
+      message: err.message,
     };
-    
+
     // Add validation errors if present
     if (err.errors) {
       response.errors = err.errors;
     }
-    
+
     res.status(err.statusCode).json(response);
     return;
-  } 
-  
+  }
+
   // Programming or unknown errors: don't leak error details to client
-  console.error('ERROR 💥', err);
+  console.error("ERROR 💥", err);
   res.status(500).json({
-    status: 'error',
-    message: 'Something went wrong'
+    status: "error",
+    message: "Something went wrong",
   });
 };
 
 // MongoDB specific error handlers
-const handleMongoDBDuplicateKeyError = (err: MongoError): ConflictError => {
+const handleMongoDBDuplicateKeyError = (err: MongoError): AppError => {
   if (!err.keyValue) {
-    return new ConflictError('Duplicate field value');
+    return new AppError("Duplicate field value", 409);
   }
-  
+
   const field = Object.keys(err.keyValue)[0];
   const value = err.keyValue[field];
   const message = `Duplicate field value: ${field} = ${value}. Please use another value!`;
-  return new ConflictError(message);
+  return new AppError(message, 409);
 };
 
-const handleMongoDBValidationError = (err: MongoValidationError): InputValidationError => {
-  const errors = Object.values(err.errors).map(el => el.message);
-  const message = `Invalid input data: ${errors.join('. ')}`;
-  return new InputValidationError(message);
+const handleMongoDBValidationError = (
+  err: MongoValidationError
+): AppError => {
+  const errors = Object.values(err.errors).map((el) => el.message);
+  const message = `Invalid input data: ${errors.join(". ")}`;
+  return new AppError(message, 422);
 };
 
-const handleMongoDBCastError = (err: MongoCastError): BadRequestError => {
+const handleMongoDBCastError = (err: MongoCastError): AppError => {
   const message = `Invalid ${err.path}: ${err.value}`;
-  return new BadRequestError(message);
+  return new AppError(message, 400);
 };
 
 // Express error handling middleware
@@ -108,21 +104,26 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
-  let error = err as AppError;
+  let error = err;
   error.statusCode = error.statusCode || 500;
-  error.status = error.status || 'error';
+  error.status = error.status || "error";
 
   // Handle specific errors
-  if (error.code === 11000) error = handleMongoDBDuplicateKeyError(error as MongoError);
-  if (error.name === 'ValidationError') error = handleMongoDBValidationError(error as MongoValidationError);
-  if (error.name === 'CastError') error = handleMongoDBCastError(error as MongoCastError);
-  
+  if (error.code === 11000)
+    error = handleMongoDBDuplicateKeyError(error as MongoError);
+  if (error.name === "ValidationError")
+    error = handleMongoDBValidationError(error);
+  if (error.name === "CastError")
+    error = handleMongoDBCastError(error as MongoCastError);
+
   // JWT errors
-  if (error.name === 'JsonWebTokenError') error = new UnauthorizedError('Invalid token. Please log in again!');
-  if (error.name === 'TokenExpiredError') error = new UnauthorizedError('Your token has expired. Please log in again!');
+  if (error.name === "JsonWebTokenError")
+    error = new AppError("Invalid token. Please log in again!", 401);
+  if (error.name === "TokenExpiredError")
+    error = new AppError("Your token has expired. Please log in again!", 401);
 
   // Send different errors based on environment
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     sendDevError(error, res);
   } else {
     sendProdError(error, res);

@@ -1,5 +1,4 @@
 import User from "../models/user";
-import Seller from "../models/user";
 import { Request, Response, NextFunction } from "express";
 import sendResponse from "../utils/sendResponse";
 
@@ -33,4 +32,3 @@ export const register = async (
   }
 };
 
-// 8UEIy1ohXUIiEoYt
