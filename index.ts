@@ -1,8 +1,10 @@
 import express, { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
-import authRouter from "./routes/auth";
 import cors from "cors";
 import mongoose from "mongoose";
+import cookirParser from "cookie-parser";
+
+import authRouter from "./routes/auth";
 import { errorHandler } from "./utils/errorHandler";
 import { AppError } from "./utils/AppError";
 
@@ -37,6 +39,7 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookirParser());
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
 

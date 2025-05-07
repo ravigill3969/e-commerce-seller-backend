@@ -4,39 +4,43 @@ import sendResponse from "../utils/sendResponse";
 import jwt from "jsonwebtoken";
 import { Redis } from "@upstash/redis";
 import { catchAsync } from "../utils/asyncHandler";
+import { AppError } from "../utils/AppError";
+import { redisF } from "../utils/redis";
 
-const refreshToken = (userId: string) => {
+export const refreshToken = (userId: string) => {
   const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET!;
   return jwt.sign({ userId }, REFRESH_SECRET, { expiresIn: "30d" });
 };
 
-const accessToken = (userId: string) => {
+export const accessToken = (userId: string) => {
   const ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET!;
   return jwt.sign({ userId }, ACCESS_SECRET, { expiresIn: "3d" });
 };
 
-const sendResponseWithCookie = async (
+export const sendResponseWithCookie = async (
   res: Response,
   userId: string,
   message: string
 ) => {
-  const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-  });
+  const redis = redisF();
 
   const token = accessToken(userId);
+  const rToken = refreshToken(userId);
 
-  const refreshTokenForRedis = refreshToken(userId);
-
-  await redis.set(`${userId}-token`, refreshTokenForRedis);
+  await redis.set(`${userId}-token`, rToken, { ex: 60 * 60 * 24 * 30 });
 
   res
-    .cookie("access-token", token, {
+    .cookie("accessToken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24 * 3,
+    })
+    .cookie("refreshToken", rToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 30,
     })
     .status(200)
     .json({ success: true, message });
@@ -66,5 +70,22 @@ export const googleOAuth = catchAsync(
     }
 
     sendResponseWithCookie(res, rUser._id, "Registered successfully!");
+  }
+);
+
+export const verifyUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      next(new AppError("User nolonger exist!", 404));
+      return;
+    }
+
+    res.status(200).json({
+      message: "verified!",
+      success: true,
+      userId: user._id,
+    });
   }
 );
