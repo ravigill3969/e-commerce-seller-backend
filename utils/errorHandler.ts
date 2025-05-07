@@ -1,8 +1,9 @@
-// src/middleware/errorHandler.ts
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "./AppError";
+import dotenv from "dotenv";
 
-// Error response interface
+dotenv.config({});
+
 interface ErrorResponse {
   status: string;
   message: string;
@@ -11,7 +12,6 @@ interface ErrorResponse {
   error?: any;
 }
 
-// MongoDB specific error interfaces
 interface MongoError extends Error {
   code?: number;
   keyValue?: Record<string, any>;
@@ -78,9 +78,7 @@ const handleMongoDBDuplicateKeyError = (err: MongoError): AppError => {
   return new AppError(message, 409);
 };
 
-const handleMongoDBValidationError = (
-  err: MongoValidationError
-): AppError => {
+const handleMongoDBValidationError = (err: MongoValidationError): AppError => {
   const errors = Object.values(err.errors).map((el) => el.message);
   const message = `Invalid input data: ${errors.join(". ")}`;
   return new AppError(message, 422);

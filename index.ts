@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import { errorHandler } from "./utils/errorHandler";
 import { AppError } from "./utils/AppError";
 
-dotenv.config({});
+dotenv.config();
 
 process.on("uncaughtException", (err: Error) => {
   console.error("UNCAUGHT EXCEPTION! 💥 Shutting down...");
@@ -22,7 +22,7 @@ if (!process.env.MONGO_DB_URI) {
 mongoose
   .connect(process.env.MONGO_DB_URI!)
   .then(() => {
-    console.log("--- coneected to mongoDB successfully!" + " " + "---");
+    console.log("--- conected to mongo successfully" + " " + "---");
   })
   .catch((err) => {
     console.error("🔴 MongoDB connection error:", err);

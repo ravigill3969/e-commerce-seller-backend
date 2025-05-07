@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
 interface IUser extends Document {
+  _id: string;
   name: string;
   email: string;
   password: string;
