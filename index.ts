@@ -7,6 +7,7 @@ import cookirParser from "cookie-parser";
 import authRouter from "./routes/auth";
 import { errorHandler } from "./utils/errorHandler";
 import { AppError } from "./utils/AppError";
+import productRouter from "./routes/product";
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/seller/auth", authRouter);
+app.use("/seller/product", productRouter);
 
 app.all("/*splat", (req: Request, res: Response, next: NextFunction) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server!`, 404));

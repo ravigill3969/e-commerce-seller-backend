@@ -1,5 +1,4 @@
 import mongoose, { Document, Schema } from "mongoose";
-import validator from "validator";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 

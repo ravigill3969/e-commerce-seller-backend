@@ -1,8 +1,22 @@
 import express from "express";
+import { verifyAccessToken } from "../utils/verifyToken";
+import { addProduct } from "../controllers/product";
+import multer from "multer";
+
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 const router = express.Router();
 
-router.post("/add-product");
+router.post(
+  "/add-product",
+  verifyAccessToken,
+  upload.array("image", 10),
+  addProduct
+);
 
 const productRouter = router;
 export default productRouter;
