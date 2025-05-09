@@ -58,3 +58,37 @@ export const getCurrentUserProducts = catchAsync(
     });
   }
 );
+
+export const editProduct = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      productName,
+      price,
+      stockQuantity,
+      category,
+      brand,
+      description,
+      imageURLs,
+    } = req.body;
+
+    const files = req.files as
+      | { [fieldname: string]: Express.Multer.File[] }
+      | Express.Multer.File[];
+
+    let newImages;
+
+    if (files) {
+      const filesArray: Express.Multer.File[] = Array.isArray(files)
+        ? files
+        : Object.values(files).flat();
+
+      newImages = await uploadToCloudinary(filesArray);
+    }
+
+    if (newImages) {
+      imageURLs.push(newImages);
+    }
+
+    
+  }
+);

@@ -1,6 +1,10 @@
 import express from "express";
 import { verifyAccessToken } from "../utils/verifyToken";
-import { addProduct, getCurrentUserProducts } from "../controllers/product";
+import {
+  addProduct,
+  editProduct,
+  getCurrentUserProducts,
+} from "../controllers/product";
 import multer from "multer";
 
 const storage = multer.memoryStorage();
@@ -21,6 +25,13 @@ router.post(
   verifyAccessToken,
   upload.array("image", 10),
   addProduct
+);
+
+router.put(
+  "/edit-product",
+  verifyAccessToken,
+  upload.array("image", 10),
+  editProduct
 );
 
 const productRouter = router;
