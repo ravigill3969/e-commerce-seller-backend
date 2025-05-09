@@ -46,3 +46,15 @@ export const addProduct = catchAsync(
     });
   }
 );
+
+export const getCurrentUserProducts = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const products = await Product.find({ sellerID: req.userId });
+
+    res.status(200).json({
+      message: "Products reterieved successfully!",
+      success: true,
+      products,
+    });
+  }
+);

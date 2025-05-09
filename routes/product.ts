@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyAccessToken } from "../utils/verifyToken";
-import { addProduct } from "../controllers/product";
+import { addProduct, getCurrentUserProducts } from "../controllers/product";
 import multer from "multer";
 
 const storage = multer.memoryStorage();
@@ -11,6 +11,11 @@ const upload = multer({
 
 const router = express.Router();
 
+router.get(
+  "/get-active-user-products",
+  verifyAccessToken,
+  getCurrentUserProducts
+);
 router.post(
   "/add-product",
   verifyAccessToken,
