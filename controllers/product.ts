@@ -59,6 +59,33 @@ export const getCurrentUserProducts = catchAsync(
   }
 );
 
+export const getProductWithIdForSeller = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    console.log(id);
+
+    const product = await Product.findOne({ _id: id });
+    console.log(product);
+    if (!product) {
+      next(new AppError("Unable to find requested product!", 404));
+      return;
+    }
+
+    console.log(product.sellerID, req.userId);
+
+    if (product.sellerID.toString() !== req.userId) {
+      next(new AppError("Product donot belong to this user!", 404));
+      return;
+    }
+
+    res.status(200).json({
+      message: "product reterived successfully!",
+      product,
+      success: true,
+    });
+  }
+);
+
 export const editProduct = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const {
@@ -88,24 +115,5 @@ export const editProduct = catchAsync(
     if (newImages) {
       imageURLs.push(newImages);
     }
-  }
-);
-
-export const getProductWithIdForSeller = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params;
-
-    const product = Product.findOne({ _id: id, sellerID: req.userId });
-
-    if (!product) {
-      next(new AppError("Unable to find requested product", 404));
-      return;
-    }
-
-    res.status(200).json({
-      message: "product reterived successfully!",
-      product,
-      success: true,
-    });
   }
 );

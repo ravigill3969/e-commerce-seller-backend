@@ -107,7 +107,7 @@ export const errorHandler = (
   if (error.name === "CastError")
     error = handleMongoDBCastError(error as MongoCastError);
 
-  // JWT errors
+
   if (error.name === "JsonWebTokenError")
     error = new AppError("Invalid token. Please log in again!", 401);
   if (error.name === "TokenExpiredError")

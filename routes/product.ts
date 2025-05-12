@@ -4,6 +4,7 @@ import {
   addProduct,
   editProduct,
   getCurrentUserProducts,
+  getProductWithIdForSeller,
 } from "../controllers/product";
 import multer from "multer";
 
@@ -26,7 +27,11 @@ router.post(
   upload.array("image", 10),
   addProduct
 );
-
+router.get(
+  "/get-product-with-id/:id",
+  verifyAccessToken,
+  getProductWithIdForSeller
+);
 router.put(
   "/edit-product",
   verifyAccessToken,
