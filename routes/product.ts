@@ -33,7 +33,7 @@ router.get(
   getProductWithIdForSeller
 );
 router.put(
-  "/edit-product",
+  "/edit-product/:id",
   verifyAccessToken,
   upload.array("image", 10),
   editProduct

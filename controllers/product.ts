@@ -62,10 +62,9 @@ export const getCurrentUserProducts = catchAsync(
 export const getProductWithIdForSeller = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    console.log(id);
 
     const product = await Product.findOne({ _id: id });
-    console.log(product);
+
     if (!product) {
       next(new AppError("Unable to find requested product!", 404));
       return;
@@ -88,6 +87,7 @@ export const getProductWithIdForSeller = catchAsync(
 
 export const editProduct = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
     const {
       productName,
       price,
@@ -95,12 +95,24 @@ export const editProduct = catchAsync(
       category,
       brand,
       description,
-      imageURLs,
+      mediaReceived,
     } = req.body;
 
     const files = req.files as
       | { [fieldname: string]: Express.Multer.File[] }
       | Express.Multer.File[];
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      next(new AppError("Unable to find requested product!", 404));
+      return;
+    }
+
+    if (product.sellerID.toString() !== req.userId) {
+      next(new AppError("Product donot belong to this user!", 404));
+      return;
+    }
 
     let newImages;
 
@@ -112,8 +124,23 @@ export const editProduct = catchAsync(
       newImages = await uploadToCloudinary(filesArray);
     }
 
-    if (newImages) {
-      imageURLs.push(newImages);
-    }
+    const allMedia = [...(mediaReceived || []), ...(newImages || [])];
+
+    console.log(allMedia);
+
+    product.productName = productName;
+    product.price = price;
+    product.stockQuantity = stockQuantity;
+    product.category = category;
+    product.brand = brand;
+    product.description = description;
+    product.photoURLs = allMedia;
+
+    await product.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Product updated successfully",
+    });
   }
 );
