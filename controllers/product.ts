@@ -44,7 +44,7 @@ export const addProduct = catchAsync(
       success: true,
       message: "Product created successfully!",
     });
-  }
+  },
 );
 
 export const getCurrentUserProducts = catchAsync(
@@ -56,7 +56,7 @@ export const getCurrentUserProducts = catchAsync(
       success: true,
       products,
     });
-  }
+  },
 );
 
 export const getProductWithIdForSeller = catchAsync(
@@ -82,7 +82,7 @@ export const getProductWithIdForSeller = catchAsync(
       product,
       success: true,
     });
-  }
+  },
 );
 
 export const editProduct = catchAsync(
@@ -126,8 +126,6 @@ export const editProduct = catchAsync(
 
     const allMedia = [...(mediaReceived || []), ...(newImages || [])];
 
-    console.log(allMedia);
-
     product.productName = productName;
     product.price = price;
     product.stockQuantity = stockQuantity;
@@ -142,5 +140,5 @@ export const editProduct = catchAsync(
       status: "success",
       message: "Product updated successfully",
     });
-  }
+  },
 );
