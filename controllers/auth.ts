@@ -24,6 +24,8 @@ export const sendResponseWithCookie = async (
 ) => {
   const redis = redisF();
 
+  console.log("yes");
+
   const token = accessToken(userId);
   const rToken = refreshToken(userId);
 
@@ -49,7 +51,6 @@ export const sendResponseWithCookie = async (
 export const googleOAuth = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, picture } = req.body;
-
     const user = await User.findOne({ email });
 
     if (user) {
@@ -87,5 +88,26 @@ export const verifyUser = catchAsync(
       success: true,
       userId: user._id,
     });
+  }
+);
+
+export const logout = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    res
+      .cookie("accessToken", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 0,
+      })
+      .cookie("refreshToken", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 0,
+      })
+      .status(200)
+      .json({ success: true, message: "logout sucess" });
+    sendResponse("success", 200, true, res);
   }
 );
